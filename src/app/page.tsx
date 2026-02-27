@@ -363,20 +363,19 @@ export default function Home() {
                 onPlayPause={handlePlayPause}
                 onStop={handleStop}
                 onSpeedChange={handleSpeedChange}
+                scripts={playlist.scripts}
               />
             </motion.section>
           </div>
         )}
       </div>
     </main>
-    {state === "PLAYING" && (
-      <FeedbackPanel
-        currentSection={currentSection}
-        avatarName={currentAvatarName}
-        avatarId={avatarId!}
-        hookIndex={selectedHookIndex}
-      />
-    )}
+    <FeedbackPanel
+      currentSection={currentSection}
+      avatarName={state === "PLAYING" ? currentAvatarName : null}
+      avatarId={avatarId}
+      hookIndex={selectedHookIndex}
+    />
     </>
   );
 }

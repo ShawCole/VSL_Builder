@@ -15,8 +15,8 @@ import {
 
 interface Props {
   currentSection: string;
-  avatarName: string;
-  avatarId: string;
+  avatarName: string | null;
+  avatarId: string | null;
   hookIndex: number;
 }
 
@@ -26,8 +26,11 @@ const TRANSITION_AVATARS: Record<string, string[]> = {
   Vanessa: AVATARS.filter((a) => a.transitionSpeaker === "vanessa").map((a) => a.name),
 };
 
-/** Does this note belong to the current avatar's view? */
-function isNoteVisible(note: FeedbackNote, avatarName: string): boolean {
+/** Does this note belong to the current avatar's view? null = global (show all) */
+function isNoteVisible(note: FeedbackNote, avatarName: string | null): boolean {
+  // Global view: show everything
+  if (!avatarName) return true;
+
   const s = note.section;
   // Evergreen sections are global
   if (s.startsWith("Evergreen")) return true;
@@ -137,7 +140,7 @@ export function FeedbackPanel({ currentSection, avatarName, avatarId, hookIndex 
     const note = await createNote({
       note: text,
       section: currentSection,
-      avatar: avatarName,
+      avatar: avatarName ?? "General",
       hookindex: hookIndex,
     });
     setNotes((prev) => [note, ...prev]);

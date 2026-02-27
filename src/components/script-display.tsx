@@ -241,8 +241,8 @@ export function ScriptDisplay({
                   "linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%)",
               }}
             >
-              {/* Top spacer so first words aren't hidden under the mask */}
-              <div style={{ height: VIEWPORT_HEIGHT * 0.28 }} />
+              {/* Top spacer — minimal for first segment, larger once scrolling is needed */}
+              <div style={{ height: activeIndex <= 0 ? 20 : VIEWPORT_HEIGHT * 0.28 }} />
 
               <div className="px-5">
                 {paragraphs.map((paragraph, pIdx) => {
@@ -253,12 +253,14 @@ export function ScriptDisplay({
                     const segIdx = labels.indexOf(header.text);
                     const isCurrent = segIdx === activeIndex;
                     const isPast = segIdx >= 0 && segIdx < activeIndex;
+                    const isFirstHeader = segIdx === 0;
 
                     return (
                       <div
                         key={`h-${pIdx}`}
                         className={cn(
-                          "text-xs font-semibold uppercase tracking-wider mt-6 mb-2 transition-colors duration-300",
+                          "text-xs font-semibold uppercase tracking-wider mb-2 transition-colors duration-300",
+                          isFirstHeader ? "mt-1" : "mt-6",
                           isCurrent
                             ? "text-foreground/60"
                             : isPast

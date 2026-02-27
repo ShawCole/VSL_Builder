@@ -1,8 +1,9 @@
 "use client";
 
+import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Play, Pause, Square } from "lucide-react";
+import { Play, Pause, Square, Copy, Check } from "lucide-react";
 
 const SPEED_OPTIONS = [1, 1.25, 1.5, 1.75, 2];
 
@@ -13,21 +14,36 @@ interface Props {
   onPlayPause: () => void;
   onStop: () => void;
   onSpeedChange: (rate: number) => void;
+  /** All scripts in playlist order: [hook, transition, evergreen1..5] */
+  scripts?: string[];
 }
 
-export function AudioPlayer({ isPlaying, isLoading, playbackRate, onPlayPause, onStop, onSpeedChange }: Props) {
+export function AudioPlayer({ isPlaying, isLoading, playbackRate, onPlayPause, onStop, onSpeedChange, scripts }: Props) {
+  const [copied, setCopied] = useState<string | null>(null);
+
   const nextSpeed = () => {
     const idx = SPEED_OPTIONS.indexOf(playbackRate);
     const next = SPEED_OPTIONS[(idx + 1) % SPEED_OPTIONS.length];
     onSpeedChange(next);
   };
 
+  const handleCopy = useCallback(async (label: string, text: string) => {
+    await navigator.clipboard.writeText(text);
+    setCopied(label);
+    setTimeout(() => setCopied(null), 2000);
+  }, []);
+
+  const hookScript = scripts?.[0] ?? "";
+  const transitionScript = scripts?.[1] ?? "";
+  const evergreenScript = scripts?.slice(2).join("\n\n") ?? "";
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex items-center gap-2"
+      className="space-y-2"
     >
+    <div className="flex items-center gap-2">
       {/* Main play/pause */}
       <motion.button
         onClick={onPlayPause}
@@ -90,6 +106,38 @@ export function AudioPlayer({ isPlaying, isLoading, playbackRate, onPlayPause, o
       >
         <Square className="h-3.5 w-3.5" />
       </motion.button>
+    </div>
+
+    {/* Copy buttons */}
+    {scripts && scripts.length > 0 && (
+      <div className="flex items-center gap-2">
+        {[
+          { label: "Hook", text: hookScript },
+          { label: "Transition", text: transitionScript },
+          { label: "Evergreen", text: evergreenScript },
+        ].map(({ label, text }) => (
+          <motion.button
+            key={label}
+            onClick={() => handleCopy(label, text)}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            className="flex-1 h-10 rounded-xl flex items-center justify-center gap-1.5 text-xs font-medium bg-white/[0.04] border border-white/10 text-muted-foreground hover:text-foreground/80 hover:bg-white/[0.08] transition-all duration-200 cursor-pointer"
+          >
+            {copied === label ? (
+              <>
+                <Check className="h-3 w-3 text-emerald-400" />
+                <span className="text-emerald-400">Copied</span>
+              </>
+            ) : (
+              <>
+                <Copy className="h-3 w-3" />
+                <span>Copy {label}</span>
+              </>
+            )}
+          </motion.button>
+        ))}
+      </div>
+    )}
     </motion.div>
   );
 }
